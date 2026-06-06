@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание занятий</title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=E2KaUaoGLOIaS_KwHXL7NH3TVNyLCJyM5eZs8NqoMo3FQkKpzztaglOJxoZFaPXnEdKVQu487B3SSF03S5DAdYYvdLN5yWTs6kBipB0rSQHU7uHOThcjCi5Plln_4ldr5luukk3GZEPKW5bfJ2yvOEenwWH-mJqjgm8Kpp6LgpPUwjuU9qOtTuRZCpWygvZVO_aUrLPQ1YsmIWVL-e6LKXxBNtRoIeuZ3pDiMNZFIkW6x_qDa-4tL0b9P9xegbY837tusDnQJ1dKhfzXNhWSIwYszCCclZ96pJidvWxI3zKRW753Mma2uWkBkdx5S-AXYr2-zV-C9sATX0rA5D5lRwmQOez-VDiGfeutijf2NXwV3KzD-k-FMAInbnNN2qJ0fzsfJFDlYcjDVhuvMHETJVbU-JmPDv3PIaLd-ZFnY7OIEHmywBkcCD8irPQJS1xmOpzwhHCA4zA5FdUYAJ6q50_wMqIzEDx61kiRdVM-FvOCGiJxgIvtmCJ_sQl3NhqRn7YGD72DijbYj9b3nM3PIBfb2sP1FNgxG-TVKgQXJPriP6j24ndDfbTD3L4-axtKmLbCMhTQm-CxXJq5gGvrHb8rLlSyvQ85lAfGDSIfeeLYyJ9t9BJ6zXgnRx8ugWhVj_xTL5NNc-Dznr7aP3ZXyg" charset="UTF-8"></script><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:10px}
+.container{max-width:100%;margin:0 auto;background:white;border-radius:15px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden}
+.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;text-align:center}
+.header h1{font-size:1.8em;margin-bottom:5px}
+.week-toggle{display:flex;justify-content:center;gap:15px;margin-top:15px;flex-wrap:wrap}
+.week-btn{padding:10px 25px;border:2px solid white;background:rgba(255,255,255,0.2);color:white;border-radius:25px;cursor:pointer;font-weight:600;transition:all 0.3s}
+.week-btn:hover{background:rgba(255,255,255,0.3)}
+.week-btn.active{background:white;color:#667eea}
+.nav-tabs{display:flex;background:#f8f9fa;border-bottom:3px solid #e9ecef;overflow-x:auto;flex-wrap:wrap}
+.nav-tab{padding:12px 20px;cursor:pointer;border:none;background:none;font-size:0.95em;font-weight:600;color:#6c757d;transition:all 0.3s;border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap}
+.nav-tab:hover{color:#667eea;background:rgba(102,126,234,0.05)}
+.nav-tab.active{color:#667eea;border-bottom-color:#667eea;background:white}
+.content-area{padding:20px;min-height:500px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn 0.4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.search-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.search-bar input,.search-bar select{padding:10px 15px;border:2px solid #e9ecef;border-radius:8px;font-size:0.95em;min-width:180px}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600;transition:all 0.3s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}
+.btn-success{background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);color:white}
+.btn-danger{background:linear-gradient(135deg,#ff416c 0%,#ff4b2b 100%);color:white}
+.btn-warning{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);color:white}
+.schedule-wrapper{overflow-x:auto;margin-top:15px}
+.schedule-table{width:100%;border-collapse:collapse;font-size:0.82em;min-width:1200px}
+.schedule-table th{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:10px 6px;text-align:center;font-weight:600;border:1px solid #5a6fd6}
+.schedule-table td{padding:8px 5px;border:1px solid #dee2e6;text-align:center;vertical-align:middle;min-width:85px}
+.schedule-table .lesson-num{background:#fff3e0;font-weight:700;color:#e65100}
+.schedule-table .empty-cell{background:#f5f5f5;color:#bbb}
+.schedule-table .subject{font-weight:600;color:#333;font-size:0.88em}
+.schedule-table .teacher{color:#666;font-size:0.82em}
+.schedule-table .room{color:#667eea;font-weight:600;font-size:0.82em}
+.editable{cursor:pointer;border:2px dashed transparent;border-radius:4px;padding:2px;transition:all 0.2s}
+.editable:hover{border-color:#667eea;background:rgba(102,126,234,0.08)}
+.day-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:15px;border-radius:10px;margin:20px 0 10px;text-align:center;font-size:1.2em;font-weight:700}
+.course-header{background:#e3f2fd;color:#1565c0;padding:12px 20px;border-radius:8px;margin:15px 0 10px;font-size:1.1em;font-weight:700;border-left:4px solid #1976d2}
+.add-lesson-row{text-align:center;padding:15px;background:#f8f9fa;border:2px dashed #667eea;border-radius:10px;margin:10px 0;cursor:pointer;transition:all 0.3s}
+.add-lesson-row:hover{background:rgba(102,126,234,0.05);transform:translateY(-2px)}
+.add-lesson-row span{color:#667eea;font-weight:600;font-size:1.1em}
+.bells-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:20px}
+.bells-card{background:white;border-radius:12px;padding:20px;box-shadow:0 3px 10px rgba(0,0,0,0.08);border:2px solid #e9ecef}
+.bells-card h3{text-align:center;margin-bottom:15px;color:#667eea}
+.bell-item{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:15px;border-radius:10px;text-align:center;margin-bottom:10px}
+.bell-item .num{font-size:1.8em;font-weight:700}
+.bell-item .time{font-size:1.1em;opacity:0.9}
+.bell-item .sub-time{font-size:0.85em;opacity:0.8;margin-top:4px}
+.replacement-card{background:white;border:2px solid #e9ecef;border-radius:12px;padding:20px;margin-bottom:15px}
+.replacement-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:15px}
+.replacement-form input,.replacement-form select{padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:0.95em}
+.replacement-item{background:#f8f9fa;border-left:4px solid #667eea;padding:15px;margin-bottom:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.replacement-item .info{flex:1;min-width:250px}
+.list-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.list-card{background:white;border-radius:12px;padding:20px;box-shadow:0 3px 10px rgba(0,0,0,0.08);border:2px solid #e9ecef}
+.list-card h3{color:#667eea;margin-bottom:15px;padding-bottom:8px;border-bottom:2px solid #e9ecef}
+.list-card ul{list-style:none}
+.list-card li{padding:8px 0;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.list-card li:last-child{border-bottom:none}
+.list-card li::before{content:"●";color:#667eea;font-size:0.7em}
+.group-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.group-chip{padding:6px 14px;background:#e9ecef;border-radius:20px;cursor:pointer;transition:all 0.3s;font-size:0.85em;font-weight:600}
+.group-chip:hover,.group-chip.active{background:#667eea;color:white;transform:translateY(-2px)}
+.print-section{background:white;padding:30px;border-radius:12px}
+.print-table{width:100%;border-collapse:collapse;margin-top:15px}
+.print-table th,.print-table td{border:1px solid #333;padding:10px;text-align:left}
+.print-table th{background:#667eea;color:white}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:25px}
+.stat-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:12px;text-align:center}
+.stat-card .number{font-size:2.5em;font-weight:700}
+.toast{position:fixed;bottom:20px;right:20px;background:#333;color:white;padding:12px 20px;border-radius:8px;box-shadow:0 5px 20px rgba(0,0,0,0.3);z-index:1000;display:none}
+.toast.show{display:block;animation:slideIn 0.3s ease}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;display:none;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:white;padding:25px;border-radius:15px;max-width:550px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalIn 0.3s ease}
+@keyframes modalIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{color:#667eea;margin-bottom:15px}
+.modal input{width:100%;padding:10px;margin-bottom:10px;border:2px solid #e9ecef;border-radius:8px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:15px;flex-wrap:wrap}
+.teacher-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.teacher-row input{flex:1;margin-bottom:0}
+input:disabled,select:disabled{background:#f5f5f5;color:#999;cursor:not-allowed}
+#replacements .btn-primary,#replacements .btn-danger{display:none}
+.admin-only{display:none}
+.week-indicator{text-align:center;padding:10px;margin-bottom:15px;border-radius:8px;font-weight:600;font-size:1.1em}
+.week-indicator.chislitel{background:#e8f5e9;color:#2e7d32;border:2px solid #4caf50}
+.week-indicator.znamenatel{background:#fff3e0;color:#e65100;border:2px solid #ff9800}
+@media print{body{background:white;padding:0}.container{box-shadow:none;border-radius:0}.nav-tabs,.search-bar,.btn,.no-print,.week-toggle{display:none!important}.tab-content{display:block!important}.content-area{padding:15px}}
+@media(max-width:768px){.header h1{font-size:1.4em}.search-bar{flex-direction:column;align-items:stretch}.schedule-table{font-size:0.72em}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>📚 Расписание занятий</h1>
+<p>1–5 курсы | Числитель / Знаменатель | 1 и 2 смена</p>
+<div class="week-toggle no-print">
+<button class="week-btn active" onclick="setWeek('chislitel')" id="btnChis">📗 Числитель</button>
+<button class="week-btn" onclick="setWeek('znamenatel')" id="btnZnam">📙 Знаменатель</button>
+</div>
+<div style="margin-top:15px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+<button id="loginBtn" class="btn btn-primary" onclick="showLoginModal()">🔐 Войти для редактирования</button>
+<button id="logoutBtn" class="btn btn-danger" onclick="logout()" style="display:none">🔒 Выйти</button>
+<span id="adminBadge" style="display:none;background:#27ae60;color:white;padding:8px 16px;border-radius:20px;font-size:0.85em;font-weight:600;align-items:center;gap:5px">✅ Режим редактирования</span>
+</div>
+</div>
+<div class="nav-tabs">
+<button class="nav-tab active" onclick="showTab('schedule')">📅 Расписание</button>
+<button class="nav-tab" onclick="showTab('replacements')">🔄 Замены</button>
+<button class="nav-tab" onclick="showTab('bells')">🔔 Звонки</button>
+<button class="nav-tab" onclick="showTab('teachers')">👨‍🏫 Учителя</button>
+<button class="nav-tab" onclick="showTab('rooms')">🏫 Кабинеты</button>
+<button class="nav-tab" onclick="showTab('print')">🖨️ Печать</button>
+</div>
+<div class="content-area">
+
+<!-- РАСПИСАНИЕ -->
+<div id="schedule" class="tab-content active">
+<div class="search-bar no-print">
+<select id="dayFilter" onchange="filterSchedule()"><option value="all">Все дни</option><option value="monday">Понедельник</option><option value="tuesday">Вторник</option><option value="wednesday">Среда</option><option value="thursday">Четверг</option><option value="friday">Пятница</option><option value="saturday">Суббота</option></select>
+<select id="courseFilter" onchange="filterSchedule()"><option value="all">Все курсы</option><option value="1">1 курс</option><option value="2">2 курс</option><option value="3">3 курс</option><option value="4">4 курс</option><option value="5">5 курс</option></select>
+<select id="groupFilter" onchange="filterSchedule()"><option value="all">Все группы</option></select>
+<select id="shiftFilter" onchange="filterSchedule()"><option value="all">Все смены</option><option value="1">1 смена</option><option value="2">2 смена</option></select>
+<input type="text" id="searchInput" placeholder="Поиск..." onkeyup="filterSchedule()">
+<button class="btn btn-primary admin-only" onclick="saveSchedule()">💾 Сохранить</button>
+<button class="btn btn-success" onclick="window.print()">🖨️ Печать</button>
+</div>
+<div id="weekIndicator" class="week-indicator chislitel">📗 Неделя: Числитель</div>
+<div id="scheduleContainer"></div>
+</div>
+
+<!-- ЗАМЕНЫ -->
+<div id="replacements" class="tab-content">
+<h2 style="color:#667eea;margin-bottom:15px">🔄 Управление заменами</h2>
+<div class="replacement-card no-print">
+<h4 style="color:#667eea;margin-bottom:10px">Добавить замену</h4>
+<div class="replacement-form">
+    <select id="repToLesson"><option value="">№ пары</option><option value="1 пара">1 пара</option><option value="2 пара">2 пара</option><option value="3 пара">3 пара</option><option value="4 пара">4 пара</option><option value="5 пара">5 пара</option><option value="6 пара">6 пара</option></select>
+<select id="repGroup"><option value="">Группа</option></select>
+<select id="repFromLesson"><option value="">Предмет</option><option value="Информат.">Информат.</option><option value="Математ.">Математ.</option><option value="История">История</option><option value="Химия">Химия</option><option value="Ин.язык">Ин.язык</option><option value="Рус.язык">Рус.язык</option><option value="Физ-ра">Физ-ра</option><option value="Физика">Физика</option><option value="Инд.проект">Инд.проект</option><option value="Биология">Биология</option><option value="Литература">Литература</option><option value="География">География</option><option value="Информатика (Тильда)">Информатика (Тильда)</option><option value="МДК 02.01">МДК 02.01</option><option value="МДК 10.01">МДК 10.01</option><option value="ОБЗР">ОБЗР</option><option value="Общество.">Общество.</option><option value="МДК 02.03">МДК 02.03</option><option value="Числ.методы">Числ.методы</option><option value="Эконом.отрасли">Эконом.отрасли</option><option value="Информац.технологии">Информац.технологии</option><option value="МДК 12.01">МДК 12.01</option><option value="Дискр.математ.">Дискр.математ.</option><option value="МДК 01.01">МДК 01.01</option><option value="Комп.сети">Комп.сети</option><option value="ОПД">ОПД</option><option value="ЭПРТ">ЭПРТ</option><option value="Инж.графика">Инж.графика</option><option value="БЖД">БЖД</option><option value="Метрология">Метрология</option><option value="Э и Э">Э и Э</option><option value="МДК 05.02">МДК 05.02</option><option value="Стандарт.">Стандарт.</option><option value="Осн.фин.гр.">Осн.фин.гр.</option><option value="Тех.оборуд.">Тех.оборуд.</option><option value="Эл.машины">Эл.машины</option><option value="МДК 02.02">МДК 02.02</option><option value="МДК 03.01">МДК 03.01</option><option value="Процессы формообр.">Процессы формообр.</option><option value="МДК 05.01">МДК 05.01</option><option value="РЯ и КР">РЯ и КР</option><option value="Психол.общ.">Психол.общ.</option><option value="МДК 04.01">МДК 04.01</option><option value="ЭВМ">ЭВМ</option><option value="МДК 01.02">МДК 01.02</option><option value="Тех.мех.">Тех.мех.</option><option value="Охр.труда">Охр.труда</option><option value="Числ.методы">Числ.методы</option><option value="МДК 03.02">МДК 03.02</option><option value="Технолог.машиностр.">Технолог.машиностр.</option><option value="МДК 06.01">МДК 06.01</option><option value="МДК 01.03в">МДК 01.03в</option><option value="МДК 05.04">МДК 05.04</option><option value="МДК 05.02">МДК 05.02</option><option value="ОА и П">ОА и П</option><option value="Инф И ВТ">Инф И ВТ</option><option value="МДК 02.02">МДК 02.02</option><option value="МДК 12.01">МДК 12.01</option><option value="Комп.графика">Комп.графика</option><option value="МДК 04.01">МДК 04.01</option><option value="МДК 01.03">МДК 01.03</option><option value="ОсРО">ОсРО</option><option value="Математ.методы">Математ.методы</option><option value="Тех. оснастка">Тех. оснастка</option><option value="Проц.формиобр.">Проц.формиобр.</option><option value="МДК 01.03в">МДК 01.03в</option></select>
+<select id="repToLesson"><option value="">→</option></select>
+    <select id="repFromLesson"><option value="">Предмет</option><option value="Информат.">Информат.</option><option value="Математ.">Математ.</option><option value="История">История</option><option value="Химия">Химия</option><option value="Ин.язык">Ин.язык</option><option value="Рус.язык">Рус.язык</option><option value="Физ-ра">Физ-ра</option><option value="Физика">Физика</option><option value="Инд.проект">Инд.проект</option><option value="Биология">Биология</option><option value="Литература">Литература</option><option value="География">География</option><option value="Информатика (Тильда)">Информатика (Тильда)</option><option value="МДК 02.01">МДК 02.01</option><option value="МДК 10.01">МДК 10.01</option><option value="ОБЗР">ОБЗР</option><option value="Общество.">Общество.</option><option value="МДК 02.03">МДК 02.03</option><option value="Числ.методы">Числ.методы</option><option value="Эконом.отрасли">Эконом.отрасли</option><option value="Информац.технологии">Информац.технологии</option><option value="МДК 12.01">МДК 12.01</option><option value="Дискр.математ.">Дискр.математ.</option><option value="МДК 01.01">МДК 01.01</option><option value="Комп.сети">Комп.сети</option><option value="ОПД">ОПД</option><option value="ЭПРТ">ЭПРТ</option><option value="Инж.графика">Инж.графика</option><option value="БЖД">БЖД</option><option value="Метрология">Метрология</option><option value="Э и Э">Э и Э</option><option value="МДК 05.02">МДК 05.02</option><option value="Стандарт.">Стандарт.</option><option value="Осн.фин.гр.">Осн.фин.гр.</option><option value="Тех.оборуд.">Тех.оборуд.</option><option value="Эл.машины">Эл.машины</option><option value="МДК 02.02">МДК 02.02</option><option value="МДК 03.01">МДК 03.01</option><option value="Процессы формообр.">Процессы формообр.</option><option value="МДК 05.01">МДК 05.01</option><option value="РЯ и КР">РЯ и КР</option><option value="Психол.общ.">Психол.общ.</option><option value="МДК 04.01">МДК 04.01</option><option value="ЭВМ">ЭВМ</option><option value="МДК 01.02">МДК 01.02</option><option value="Тех.мех.">Тех.мех.</option><option value="Охр.труда">Охр.труда</option><option value="Числ.методы">Числ.методы</option><option value="МДК 03.02">МДК 03.02</option><option value="Технолог.машиностр.">Технолог.машиностр.</option><option value="МДК 06.01">МДК 06.01</option><option value="МДК 01.03в">МДК 01.03в</option><option value="МДК 05.04">МДК 05.04</option><option value="МДК 05.02">МДК 05.02</option><option value="ОА и П">ОА и П</option><option value="Инф И ВТ">Инф И ВТ</option><option value="МДК 02.02">МДК 02.02</option><option value="МДК 12.01">МДК 12.01</option><option value="Комп.графика">Комп.графика</option><option value="МДК 04.01">МДК 04.01</option><option value="МДК 01.03">МДК 01.03</option><option value="ОсРО">ОсРО</option><option value="Математ.методы">Математ.методы</option><option value="Тех. оснастка">Тех. оснастка</option><option value="Проц.формиобр.">Проц.формиобр.</option><option value="МДК 01.03в">МДК 01.03в</option></select>
+<input type="text" id="repTeacher" placeholder="ФИО преподавателя">
+<input type="text" id="repRoom" placeholder="Кабинет">
+</div>
+<button class="btn btn-primary" onclick="addReplacement()">➕ Добавить</button>
+<button class="btn btn-success" onclick="exportReplacementsDOCX()">📄 В DOCX</button>
+</div>
+<div class="replacement-list" id="replacementList"></div>
+</div>
+
+<!-- ЗВОНКИ -->
+<div id="bells" class="tab-content">
+<h2 style="color:#667eea;text-align:center;margin-bottom:10px">🔔 Расписание звонков</h2>
+<p style="text-align:center;color:#666;margin-bottom:20px">Понедельник – Пятница</p>
+<div class="bells-grid">
+<div class="bells-card"><h3>🌅 1 смена</h3>
+<div class="bell-item"><div class="num">1 пара</div><div class="time">8:00 – 9:35</div><div class="sub-time">8:00 – 8:45 | 8:50 – 9:35</div></div>
+<div class="bell-item"><div class="num">2 пара</div><div class="time">9:45 – 11:20</div><div class="sub-time">9:45 – 10:30 | 10:35 – 11:20</div></div>
+<div class="bell-item"><div class="num">3 пара</div><div class="time">11:40 – 13:15</div><div class="sub-time">11:40 – 12:25 | 12:30 – 13:15</div></div>
+<div class="bell-item"><div class="num">4 пара</div><div class="time">13:25 – 15:00</div><div class="sub-time">13:25 – 14:10 | 14:15 – 15:00</div></div>
+</div>
+<div class="bells-card"><h3>🌙 2 смена</h3>
+<div class="bell-item"><div class="num">1 пара</div><div class="time">13:25 – 15:00</div><div class="sub-time">13:25 – 14:10 | 14:15 – 15:00</div></div>
+<div class="bell-item"><div class="num">2 пара</div><div class="time">15:10 – 16:45</div><div class="sub-time">15:10 – 15:55 | 16:00 – 16:45</div></div>
+<div class="bell-item"><div class="num">3 пара</div><div class="time">16:55 – 18:30</div><div class="sub-time">16:55 – 17:40 | 17:45 – 18:30</div></div>
+</div>
+</div>
+</div>
+
+<!-- УЧИТЕЛЯ -->
+<div id="teachers" class="tab-content">
+<div class="stats-grid"><div class="stat-card"><div class="number" id="teacherCount">0</div><div class="label">Учителей</div></div><div class="stat-card"><div class="number" id="subjectCount">0</div><div class="label">Предметов</div></div></div>
+<div class="no-print" style="margin-bottom:20px">
+<button class="btn btn-success admin-only" onclick="saveTeachers()">💾 Сохранить учителей</button>
+<button class="btn btn-primary admin-only" onclick="addNewTeacher()">➕ Добавить учителя</button>
+</div>
+<div class="list-grid" id="teachersList"></div>
+</div>
+
+<!-- КАБИНЕТЫ -->
+<div id="rooms" class="tab-content">
+<div class="stats-grid"><div class="stat-card"><div class="number" id="roomCount">0</div><div class="label">Кабинетов</div></div></div>
+<div class="list-grid" id="roomsList"></div>
+</div>
+
+<!-- ПЕЧАТЬ -->
+<div id="print" class="tab-content">
+<div class="no-print" style="margin-bottom:20px">
+<h3 style="color:#667eea;margin-bottom:10px">Выберите группы:</h3>
+<div style="margin-bottom:15px"><label style="font-weight:600;margin-right:10px">Неделя:</label><select id="printWeek" onchange="updatePrintPreview()" style="padding:8px 15px;border:2px solid #e9ecef;border-radius:8px"><option value="chislitel">📗 Числитель</option><option value="znamenatel">📙 Знаменатель</option></select></div>
+<div class="group-selector" id="printGroupSelector"></div>
+<button class="btn btn-primary" onclick="generatePrintView()">👁️ Предпросмотр</button>
+<button class="btn btn-success" onclick="window.print()">🖨️ Печать</button>
+</div>
+<div id="printPreview"></div>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- МОДАЛКА ВХОДА -->
+<div class="modal-overlay" id="loginModal">
+<div class="modal">
+<h3>🔐 Вход для администратора</h3>
+<p style="color:#666;margin-bottom:15px;font-size:0.9em">Введите пароль для получения прав на редактирование расписания</p>
+<input type="password" id="loginPassword" placeholder="Пароль" onkeydown="if(event.key==='Enter')checkPassword()">
+<p id="loginError" style="color:#e74c3c;font-size:0.85em;display:none;margin-top:5px">❌ Неверный пароль!</p>
+<div class="modal-actions">
+<button class="btn" onclick="closeLoginModal()">Отмена</button>
+<button class="btn btn-primary" onclick="checkPassword()">Войти</button>
+</div>
+</div>
+</div>
+
+<!-- МОДАЛКА РЕДАКТИРОВАНИЯ ЗАНЯТИЯ -->
+<div class="modal-overlay" id="editModal">
+<div class="modal">
+<h3>✏️ Редактировать занятие</h3>
+<p id="editInfo" style="color:#666;font-size:0.85em;margin-bottom:10px"></p>
+<input type="text" id="editSubject" placeholder="Предмет (оставьте пустым для удаления)">
+<div style="margin:10px 0"><label style="font-weight:600;color:#667eea">👨‍🏫 Учителя:</label><span style="font-size:0.8em;color:#666;margin-left:8px">(можно добавить несколько)</span></div>
+<div id="teacherEditor"></div>
+<button class="btn btn-success" onclick="addTeacherRow()" style="font-size:0.85em;margin-bottom:15px">➕ Добавить учителя</button>
+<input type="text" id="editRoom" placeholder="Кабинет">
+<div class="modal-actions">
+<button class="btn" onclick="closeEditModal()">Отмена</button>
+<button class="btn btn-danger" onclick="deleteLesson()">🗑️ Удалить</button>
+<button class="btn btn-primary" onclick="saveEdit()">💾 Сохранить</button>
+</div>
+</div>
+</div>
+
+<!-- МОДАЛКА РЕДАКТИРОВАНИЯ УЧИТЕЛЯ -->
+<div class="modal-overlay" id="teacherEditModal">
+<div class="modal">
+<h3>✏️ Редактировать учителя</h3>
+<p id="teacherEditInfo" style="color:#666;font-size:0.85em;margin-bottom:10px"></p>
+<input type="text" id="editTeacherName" placeholder="ФИО учителя">
+<div class="modal-actions">
+<button class="btn" onclick="closeTeacherEditModal()">Отмена</button>
+<button class="btn btn-danger" onclick="deleteTeacher()">🗑️ Удалить</button>
+<button class="btn btn-primary" onclick="saveTeacherEdit()">💾 Сохранить</button>
+</div>
+</div>
+</div>
+
+<script>
+// ======== ДАННЫЕ ========
+const shift1Groups = ["25Д-28","25Д-28до","25К1-29","25К2-29","25П1-29","25П2-29","25Р1-28","25Р2-28","25М-29","25Э-29","25ОН-27","24Д-27","24Д-27до","24П1-28","24П2-28","24П3-28","23Д-27","23Д-27до","23П1-27","23П2-27","23П3-27","22Д-26"];
+const shift2Groups = ["23К1-27","23К2-27","22Р1-26","23Р2-26","23М1-27","23М2-27","23М3-27","23Э-26","22К1-26","22К2-26","22Р-26к","21Р-26"];
+const allG = [...shift1Groups, ...shift2Groups];
+const dn = {monday:"Понедельник",tuesday:"Вторник",wednesday:"Среда",thursday:"Четверг",friday:"Пятница",saturday:"Суббота"};
+const days = ["monday","tuesday","wednesday","thursday","friday","saturday"];
+let teachers = ["Ангелова","Арзамасов","Басова","Бикмаева","Болочагин","Болочагина","Бондарева","Васильев","Волков","Гордеев","Гостишева","Губернаторов","Данилова","Джаббаров","Дудкина","Жуков","Земскова","Кирин","Коннов","Королева","Королёва","Коромыслова","Котков","Коткова","Кожевникова","Лапшева","Макаров","Макарова","Макаревич","Малышева","Маренникова","Морозова","Мустакаева","Мыльникова","Никонорова","Новичков","Пантюхин","Петрунин","Попов","Постникова","Родионова","Ромашев","Румянцева","Сергеев","Сергеева","Таланов","Терентьева","Типцова","Титова","Тюгаева","Уланова","Шабанова","Шарипов","Ширшов","Шафеева","Янгутов"];
+const rooms = ["01","101","103","106","108","205","208","301","302","303","304","305","306","307","308","310","401","402","403","404","405","406","407","408","410","а/з","с/з","ч/з"];
+const subjects = ["Информат.","География","Химия","Инд.проект","Математ.","Физ-ра","ОБЗР","Литература","Рус.язык","История","Физика","Биология","Ин.язык","Общество.","МДК 02.01","МДК 02.03","МДК 02.04","МДК 04.01","МДК 05.01","МДК 05.02","МДК 05.04","МДК 10.01","МДК 12.01","МДК 01.01","МДК 01.02","МДК 01.03","МДК 01.03в","МДК 01.04в","МДК 02.02","МДК 03.01","МДК 03.02","МДК 06.01","Числ.методы","Эконом.отрасли","Дискр.матем.","БЖД","Э и Э","ОПД","ЭПРТ","Комп.сети","Метролог.","Инж.граф.","Комп.графика","Тех.оборуд.","Тех.оснастка","Эл.машины","Проц.формообр.","Технолог.машиностр.","Охр.труда","РЯ и КР","Психол.общ.","ЭВМ","Материалов.","Инф.И ВТ","Инф.технол.","Стандартиз.","ОА и П","Осн.фин.гр.","Физкультура","Мат.методы","ПОПД","Практика","экзамен","Военные сборы","Консультации","Информат.(Тильда)","Информат.(3D)","Информат.(Gimp)","Индивид.проект"];
+let currentWeek="chislitel",isAdmin=false,replacements=[],currentEdit=null,selectedPrintGroups=[],currentTeacherEdit=null;
+const ADMIN_PASSWORD="admin123";
+
+function getCourseByGroup(g){if(g.startsWith("25"))return 1;if(g.startsWith("24"))return 2;if(g.startsWith("23"))return 3;if(g.startsWith("22"))return 4;if(g.startsWith("21"))return 5;return 1;}
+function getGroupsByCourse(course){return allG.filter(g=>getCourseByGroup(g)===parseInt(course));}
+function getShiftByGroup(g){return shift1Groups.includes(g)?1:2;}
+
+// ======== РАСПИСАНИЕ ЧИСЛИТЕЛЬ ========
+const schC={};
+for(let c=1;c<=5;c++){schC[c]={};days.forEach(d=>{schC[c][d]={};getGroupsByCourse(c).forEach(g=>{schC[c][d][g]=[];});});}
+
+const demo1={monday:{"25Д-28":[{l:1,s:"Информат.",t:"Басова",r:"401"},{l:2,s:"Математ.",t:"Коткова",r:"307"},{l:3,s:"Физ-ра",t:"Болочагин",r:"с/з"}],"25Д-28до":[{l:1,s:"Рус.язык",t:"Мыльникова",r:"103"},{l:2,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:3,s:"Математ.",t:"Коткова",r:"307"},{l:4,s:"География",t:"Ангелова",r:"103"}],"25К1-29":[{l:1,s:"История",t:"Данилова",r:"310"},{l:2,s:"Рус.язык",t:"Мыльникова",r:"103"},{l:3,s:"Математ.",t:"Котков",r:"205"}],"25К2-29":[{l:1,s:"Химия",t:"Макарова",r:"407"},{l:2,s:"Физика",t:"Лапшева",r:"308"},{l:3,s:"История",t:"Данилова",r:"310"}],"25П1-29":[{l:2,s:"История",t:"Данилова",r:"310"},{l:3,s:"Рус.язык",t:"Мыльникова",r:"103"},{l:4,s:"Химия",t:"Макарова",r:"407"}],"25П2-29":[{l:1,s:"Математ.",t:"Котков",r:"306"},{l:2,s:"Химия",t:"Макарова",r:"407"},{l:3,s:"Литература",t:"Гостишева",r:"301"}],"25Р1-28":[{l:2,s:"История",t:"Шульгина",r:"ч/з"},{l:3,s:"Ин.язык",t:"Ангелова",r:"302"},{l:4,s:"Математика",t:"Котков",r:"310"}],"25Р2-28":[{l:1,s:"Математ.",t:"Никонорова",r:"205"},{l:2,s:"Ин.язык",t:"Ангелова",r:"302"},{l:3,s:"Биология",t:"Макарова",r:"407"}],"25М-29":[{l:2,s:"Информат.",t:"Терентьева",r:"401"},{l:3,s:"Физика",t:"Лапшева",r:"308"},{l:4,s:"Литература",t:"Гостишева",r:"205"}],"25Э-29":[{l:1,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:2,s:"Математ.",t:"Котков",r:"306"},{l:3,s:"Ин.язык",t:"Басова",r:"303"}],"25ОН-27":[{l:2,s:"Математ.",t:"Никонорова",r:"205"},{l:3,s:"ОБЗР",t:"Постникова",r:"а/з"},{l:4,s:"Физика",t:"Морозова",r:"308"}]},tuesday:{"25Д-28":[{l:1,s:"История",t:"Данилова",r:"310"},{l:2,s:"География",t:"Ангелова",r:"301"},{l:3,s:"Ин.язык",t:"Ангелова",r:"301"}],"25Д-28до":[{l:2,s:"История",t:"Данилова",r:"310"},{l:3,s:"Литература",t:"Гостишева",r:"ч/з"},{l:4,s:"Ин.язык",t:"Ангелова",r:"310"}],"25К1-29":[{l:1,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:2,s:"Химия",t:"Макаров",r:"407"},{l:3,s:"Литература",t:"Мыльникова",r:"103"}],"25К2-29":[{l:1,s:"Математ.",t:"Морозова",r:"303"},{l:2,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:3,s:"География",t:"Титова",r:"305"}],"25П1-29":[{l:1,s:"Информат.",t:"Терентьева",r:"201"},{l:2,s:"География",t:"Титова",r:"305"},{l:3,s:"ОБЗР",t:"Постникова",r:"ч/з"}],"25П2-29":[{l:1,s:"Математ.",t:"Котков",r:"306"},{l:2,s:"Физика",t:"Лапшева",r:"308"},{l:3,s:"История",t:"Данилова",r:"310"}],"25Р1-28":[{l:1,s:"Литература",t:"Мыльникова",r:"103"},{l:2,s:"Математ.",t:"Котков",r:"306"},{l:3,s:"Физика",t:"Морозова",r:"303"}],"25Р2-28":[{l:3,s:"Математ.",t:"Никонорова",r:"308"}],"25М-29":[{l:1,s:"История",t:"Сергеев",r:"205"},{l:2,s:"Математ.",t:"Никонорова",r:"303"},{l:3,s:"География",t:"Титова",r:"305"}],"25Э-29":[{l:1,s:"Физика",t:"Лапшева",r:"308"},{l:2,s:"ОБЗР",t:"Постникова",r:"ч/з"},{l:3,s:"Химия",t:"Макаров",r:"407"}],"25ОН-27":[{l:2,s:"История",t:"Сергеев",r:"205"},{l:3,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:4,s:"Литература",t:"Гостишева",r:"103"}]},wednesday:{"25Д-28":[{l:1,s:"Информат.",t:"Басова",r:"403"},{l:2,s:"Литература",t:"Мыльникова",r:"103"},{l:3,s:"Математ.",t:"Коткова",r:"307"}],"25Д-28до":[{l:1,s:"География",t:"Ангелова",r:"103"},{l:2,s:"Математ.",t:"Коткова",r:"307"},{l:3,s:"Информат.",t:"Терентьева",r:"401"}],"25К1-29":[{l:1,s:"Химия",t:"Макаров",r:"407"},{l:2,s:"Математ.",t:"Котков",r:"205"},{l:3,s:"Информат.",t:"Басова",r:"403"}],"25К2-29":[{l:1,s:"Инд.проект",t:"Малышева",r:"405"},{l:2,s:"ОБЗР",t:"Постникова",r:"а/з"},{l:3,s:"Математ.",t:"Морозова",r:"308"}],"25П1-29":[{l:1,s:"Математ.",t:"Морозова",r:"303"},{l:2,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:3,s:"Ин.язык",t:"Ангелова",r:"305"}],"25П2-29":[{l:2,s:"Ин.язык",t:"Ангелова",r:"305"},{l:3,s:"ОБЗР",t:"Постникова",r:"а/з"}],"25Р1-28":[{l:1,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:2,s:"Физика",t:"Морозова",r:"303"},{l:3,s:"История",t:"Шульгина",r:"ч/з"}],"25Р2-28":[{l:2,s:"Инд.проект",t:"Уланова",r:"301"},{l:3,s:"Литература",t:"Мыльникова",r:"103"},{l:4,s:"География",t:"Ангелова",r:"205"}],"25М-29":[{l:1,s:"ОБЗР",t:"Постникова",r:"308"},{l:2,s:"Информат.",t:"Терентьева",r:"401"},{l:3,s:"Математ.",t:"Никонорова",r:"205"}],"25Э-29":[{l:1,s:"Математ.",t:"Котков",r:"306"},{l:2,s:"Химия",t:"Макаров",r:"407"},{l:3,s:"Инд.проект",t:"Уланова",r:"405"}],"25ОН-27":[{l:2,s:"Математ.",t:"Никонорова",r:"308"},{l:4,s:"Общество.",t:"Коромыслова",r:"310"}]},thursday:{"25Д-28":[{l:1,s:"Общество.",t:"Титова",r:"305"},{l:2,s:"Химия",t:"Макарова",r:"407"},{l:3,s:"Инд.проект",t:"Уланова",r:"301"}],"25Д-28до":[{l:2,s:"Общество.",t:"Титова",r:"305"},{l:3,s:"Химия",t:"Макарова",r:"407"},{l:4,s:"Инд.проект",t:"Уланова",r:"401"}],"25К1-29":[{l:1,s:"Математ.",t:"Котков",r:"306"},{l:2,s:"Информат.(Тильда)",t:"",r:"304/408"},{l:3,s:"Физика",t:"Лапшева",r:"308"}],"25К2-29":[{l:1,s:"Информат.",t:"Басова",r:"403"},{l:2,s:"Ин.язык",t:"Ангелова",r:"403"},{l:3,s:"История",t:"Данилова",r:"310"}],"25П1-29":[{l:1,s:"История",t:"Данилова",r:"310"},{l:2,s:"Физика",t:"Лапшева",r:"308"},{l:3,s:"Математ.",t:"Морозова",r:"а/з"}],"25П2-29":[{l:1,s:"Информат.",t:"Терентьева",r:"201"},{l:2,s:"История",t:"Данилова",r:"310"},{l:3,s:"Математ.",t:"Котков",r:"307"}],"25Р1-28":[{l:2,s:"Математ.",t:"Котков",r:"306"},{l:3,s:"ОБЗР",t:"Постникова",r:"302"},{l:4,s:"География",t:"Ангелова",r:"103"}],"25Р2-28":[{l:1,s:"История",t:"Сергеев",r:"205"},{l:2,s:"ОБЗР",t:"Постникова",r:"303"},{l:3,s:"Математ.",t:"Никонорова",r:"103"}],"25М-29":[{l:1,s:"Химия",t:"Макарова",r:"407"},{l:2,s:"Математ.",t:"Никонорова",r:"103"},{l:3,s:"История",t:"Сергеев",r:"205"}],"25Э-29":[{l:2,s:"История",t:"Сергеев",r:"205"},{l:3,s:"География",t:"Титова",r:"305"},{l:4,s:"Математ.",t:"Котков",r:"306"}],"25ОН-27":[{l:1,s:"Физика",t:"Морозова",r:"303"},{l:2,s:"Информат.",t:"Терентьева",r:"301"},{l:3,s:"География",t:"Ангелова",r:"401"}]},friday:{"25Д-28":[{l:1,s:"Математ.",t:"Коткова",r:"307"},{l:2,s:"Литература",t:"Мыльникова",r:"103"},{l:3,s:"Физика",t:"Лапшева",r:"308"}],"25Д-28до":[{l:1,s:"Физика",t:"Морозова",r:"303"},{l:2,s:"Математ.",t:"Коткова",r:"307"},{l:3,s:"Информат.",t:"Терентьева",r:"404"}],"25К1-29":[{l:1,s:"Ин.язык",t:"Ангелова",r:"403"},{l:2,s:"Математ.",t:"Котков",r:"306"},{l:3,s:"География",t:"Титова",r:"305"}],"25К2-29":[{l:1,s:"Литература",t:"Мыльникова",r:"103"},{l:2,s:"География",t:"Титова",r:"305"},{l:3,s:"Математ.",t:"Морозова",r:"310"}],"25П1-29":[{l:1,s:"География",t:"Титова",r:"305"},{l:2,s:"Математ.",t:"Морозова",r:"303"},{l:3,s:"Информат.(3D)",t:"Губернаторов",r:"201"}],"25П2-29":[{l:1,s:"Литература",t:"Гостишева",r:"205"},{l:2,s:"Физика",t:"Лапшева",r:"308"},{l:3,s:"Математ.",t:"Котков",r:"406"}],"25Р1-28":[{l:1,s:"Математ.",t:"Котков",r:"306"},{l:2,s:"Информат.",t:"Терентьева",r:"201"},{l:3,s:"Инд.проект",t:"Уланова",r:"410"}],"25Р2-28":[{l:1,s:"Математ.",t:"Никонорова",r:"304"},{l:2,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:3,s:"География",t:"Ангелова",r:"ч/з"}],"25М-29":[{l:2,s:"Ин.язык",t:"Тюгаева",r:"402"},{l:3,s:"Рус.язык",t:"Гостишева",r:"304"},{l:4,s:"Физ-ра",t:"Волков",r:"с/з"}],"25Э-29":[{l:2,s:"Рус.язык",t:"Гостишева",r:"304"},{l:3,s:"Литература",t:"Гостишева",r:"304"},{l:4,s:"Математ.",t:"Котков",r:"307"}],"25ОН-27":[{l:2,s:"Ин.язык",t:"Ангелова",r:"403"},{l:3,s:"Математ.",t:"Никонорова",r:"407"},{l:4,s:"История",t:"Сергеев",r:"205"}]},saturday:{"25Д-28":[{l:2,s:"ОБЗР",t:"Постникова",r:"ч/з"},{l:3,s:"Общество.",t:"Титова",r:"306"},{l:4,s:"Химия",t:"Макарова",r:"407"}],"25Д-28до":[{l:1,s:"ОБЗР",t:"Постникова",r:"ч/з"},{l:2,s:"Литература",t:"Гостишева",r:"205"},{l:3,s:"История",t:"Данилова",r:"310"}],"25К1-29":[{l:1,s:"Литература",t:"Мыльникова",r:"103"},{l:2,s:"История",t:"Данилова",r:"310"},{l:3,s:"ОБЗР",t:"Постникова",r:"ч/з"}],"25К2-29":[{l:1,s:"Математ.",t:"Морозова",r:"307"},{l:2,s:"Информат.(Тильда)",t:"",r:"405"},{l:3,s:"Физика",t:"Лапшева",r:"308"}],"25П1-29":[{l:1,s:"Химия",t:"Макарова",r:"407"},{l:2,s:"Литература",t:"Мыльникова",r:"103"},{l:3,s:"Математ.",t:"Морозова",r:"307"}],"25П2-29":[{l:2,s:"Информат.(3D)",t:"Губернаторов",r:"201"},{l:3,s:"Химия",t:"Макарова",r:"407"}],"25Р1-28":[{l:1,s:"Информат.(Gimp)",t:"Малышева",r:"301"},{l:2,s:"Биология",t:"Макарова",r:"407"},{l:3,s:"Литература",t:"Мыльникова",r:"103"}],"25Р2-28":[{l:2,s:"Физика",t:"Морозова",r:"307"},{l:3,s:"Информат.(Gimp)",t:"Малышева",r:"301"},{l:4,s:"Литература",t:"Мыльникова",r:"103"}],"25М-29":[{l:2,s:"Физика",t:"Лапшева",r:"308"},{l:3,s:"Математ.",t:"Никонорова",r:"303"},{l:4,s:"Индивид.проект",t:"Малышева",r:"301"}],"25Э-29":[{l:2,s:"География",t:"Титова",r:"306"},{l:3,s:"Информат.",t:"Гордеев",r:"408"},{l:4,s:"Литература",t:"Гостишева",r:"205"}],"25ОН-27":[{l:3,s:"Литература",t:"Гостишева",r:"205"},{l:4,s:"Математ.",t:"Никонорова",r:"303"},{l:5,s:"Химия",t:"Макаров",r:"308"}]}};
+
+Object.keys(demo1).forEach(day=>{Object.keys(demo1[day]).forEach(group=>{schC[1][day][group]=demo1[day][group];});});
+
+const demo2={monday:{"24Д-27":[{l:1,s:"МДК 02.03",t:"Типцова",r:"404"},{l:2,s:"МДК 02.01",t:"Бикмаева",r:"405"},{l:3,s:"Ин.язык",t:"Тюгаева",r:"402"}],"24Д-27до":[{l:1,s:"МДК 02.01",t:"Бикмаева",r:"405"},{l:2,s:"Ин.язык",t:"Тюгаева",r:"402"},{l:3,s:"МДК 02.03",t:"Типцова",r:"404"}],"24П1-28":[{l:1,s:"Числ.методы",t:"Коткова",r:"408"},{l:2,s:"МДК 10.01",t:"Ширшов",r:"301"},{l:3,s:"Эконом.отрасли",t:"Терентьева",r:"а/з"}],"24П2-28":[{l:1,s:"МДК 10.01",t:"Ширшов",r:"301"},{l:2,s:"Экономика отрасли",t:"Бондарева",r:"305"},{l:3,s:"Информац.технологии",t:"Дасаева",r:"408"}],"24П3-28":[{l:1,s:"Эконом.отрасли",t:"Бондарева",r:"305"},{l:2,s:"Информац.технологии",t:"Дасаева",r:"408"},{l:3,s:"МДК 12.01",t:"Таланов",r:"304"}]},tuesday:{"24Д-27":[{l:1,s:"МДК 05.02",t:"Болочагина",r:"401"},{l:2,s:"МДК 01.01",t:"Малышева",r:"405"},{l:3,s:"Инж.граф.",t:"Маренникова",r:"306"}],"24Д-27до":[{l:1,s:"МДК 01.01",t:"Малышева",r:"405"},{l:2,s:"МДК 05.02",t:"Болочагина",r:"401"},{l:3,s:"МДК 01.01",t:"Малышева",r:"405"}],"24П1-28":[{l:2,s:"Дискр.мат.",t:"Коткова",r:"307"},{l:3,s:"Стандарт.",t:"Ширшов",r:"406"}],"24П2-28":[{l:2,s:"Стандарт.",t:"Ширшов",r:"406"},{l:3,s:"Дискр.мат.",t:"Коткова",r:"307"}],"24П3-28":[{l:1,s:"Стандарт.",t:"Ширшов",r:"406"},{l:2,s:"МДК 02.01",t:"Таланов",r:"304"},{l:3,s:"МДК 02.01",t:"Таланов",r:"304"}]},wednesday:{"24Д-27":[{l:1,s:"МДК 05.04",t:"Болочагина",r:"401"},{l:2,s:"МДК 03.01",t:"Малышева",r:"405"},{l:3,s:"МДК 02.03",t:"Типцова",r:"404"}],"24Д-27до":[{l:1,s:"Ин.язык",t:"Тюгаева",r:"402"},{l:2,s:"МДК 02.03",t:"Типцова",r:"404"},{l:3,s:"Инженер.граф",t:"Маренникова",r:"306"}],"24П1-28":[{l:1,s:"Элем.ВМ",t:"Коткова",r:"307"},{l:2,s:"РЯ и КР",t:"Данилова",r:"310"},{l:3,s:"Информ.техн.",t:"Дасаева",r:"408"}],"24П2-28":[{l:1,s:"МДК 02.02",t:"Таланов",r:"304"},{l:2,s:"МДК 02.01",t:"Таланов",r:"304"},{l:3,s:"РЯ и КР",t:"Данилова",r:"310"}],"24П3-28":[{l:1,s:"РЯ и КР",t:"Данилова",r:"310"},{l:2,s:"Информ.техн.",t:"Дасаева",r:"408"},{l:3,s:"Психол.общ.",t:"Шабанова",r:""}]},thursday:{"24Д-27":[{l:1,s:"МДК 02.01",t:"Бикмаева",r:"408"},{l:2,s:"МДК 03.01",t:"Малышева",r:"405"},{l:3,s:"Физ-ра",t:"Болочагин",r:"с/з"}],"24Д-27до":[{l:1,s:"МДК 03.01",t:"Малышева",r:"405"},{l:2,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:3,s:"МДК 02.01",t:"Бикмаева",r:"405"}],"24П1-28":[{l:1,s:"Физ-ра",t:"Болочагин",r:"с/з"},{l:2,s:"МДК 05.01",t:"Королева",r:"408"},{l:3,s:"Экономика отрасли",t:"Терентьева",r:"306"}],"24П2-28":[{l:1,s:"Элем.ВМ",t:"Коткова",r:"307"},{l:2,s:"Числ.методы",t:"Морозова",r:"а/з"},{l:3,s:"МДК 05.01",t:"Королева",r:"408"}],"24П3-28":[{l:2,s:"Элем.ВМ",t:"Коткова",r:"307"},{l:3,s:"Числ.методы",t:"Коткова",r:"408"},{l:4,s:"МДК 05.01",t:"Королева",r:"408"}]},friday:{"24Д-27":[{l:1,s:"МДК 01.02",t:"Румянцева",r:"310"},{l:2,s:"МДК 05.04",t:"Болочагина",r:"401"},{l:3,s:"МДК 01.02",t:"Румянцева",r:"404"}],"24Д-27до":[{l:1,s:"МДК 02.03",t:"Типцова",r:"404"},{l:2,s:"МДК 01.02",t:"Румянцева",r:"404"},{l:3,s:"МДК 05.04",t:"Болочагина",r:"401"}],"24П1-28":[{l:1,s:"Ин.язык",t:"Земскова",r:"302"},{l:2,s:"Информац.технологии",t:"Дасаева",r:"408"},{l:3,s:"Стандартиз.",t:"Ширшов",r:"301"}],"24П2-28":[{l:1,s:"Стандартиз.",t:"Ширшов",r:"301"},{l:2,s:"Ин.язык",t:"Земскова",r:"302"},{l:3,s:"Физ-ра",t:"Янгутов",r:"с/з"}],"24П3-28":[{l:2,s:"Стандартиз.",t:"Ширшов",r:"301"},{l:3,s:"Диск.матем.",t:"Коткова",r:"307"}]},saturday:{"24Д-27":[{l:1,s:"МДК 01.03",t:"Дудкина",r:"401"},{l:2,s:"МДК 02.02",t:"Дудкина",r:"401"},{l:3,s:"МДК 02.02",t:"Дудкина",r:"401"}],"24Д-27до":[{l:4,s:"МДК 01.03",t:"Дудкина",r:"401"},{l:5,s:"МДК 02.02",t:"Дудкина",r:"401"},{l:6,s:"МДК 02.02",t:"Дудкина",r:"401"}],"24П1-28":[{l:1,s:"МДК 02.01",t:"Таланов",r:"304"},{l:2,s:"МДК 12.01",t:"Таланов",r:"304"},{l:3,s:"МДК 05.01",t:"Королёва",r:"406"}],"24П2-28":[{l:1,s:"МДК 05.01",t:"Королёва",r:"406"},{l:2,s:"Эконом.отр.",t:"Бондарева",r:"305"},{l:3,s:"МДК 12.01",t:"Таланов",r:"304"}],"24П3-28":[{l:1,s:"Эконом.отр.",t:"Бондарева",r:"305"},{l:2,s:"МДК 05.01",t:"Королёва",r:"406"},{l:3,s:"Физ-ра",t:"Янгутов",r:"с/з"}]}};
+
+Object.keys(demo2).forEach(day=>{Object.keys(demo2[day]).forEach(group=>{schC[2][day][group]=demo2[day][group];});});
+
+const demo3={monday:{"23Д-27":[{l:1,s:"МДК 01.01",t:"Ромашев",r:"406"},{l:2,s:"МДК 02.01",t:"Бикмаева",r:"405"},{l:3,s:"Ин.язык",t:"Тюгаева",r:"402"}],"23Д-27до":[{l:1,s:"МДК 02.01",t:"Бикмаева",r:"405"},{l:2,s:"Ин.язык",t:"Тюгаева",r:"402"},{l:3,s:"МДК 01.01",t:"Ромашев",r:"406"}],"23П1-27":[{l:1,s:"Числ.методы",t:"Коткова",r:"408"},{l:2,s:"МДК 10.01",t:"Ширшов",r:"301"},{l:3,s:"Эконом.отрасли",t:"Терентьева",r:"а/з"}],"23П2-27":[{l:1,s:"МДК 10.01",t:"Ширшов",r:"301"},{l:2,s:"Экономика отрасли",t:"Бондарева",r:"305"},{l:3,s:"Информац.технологии",t:"Дасаева",r:"408"}],"23П3-27":[{l:1,s:"Эконом.отрасли",t:"Бондарева",r:"305"},{l:2,s:"Информац.технологии",t:"Дасаева",r:"408"},{l:3,s:"МДК 12.01",t:"Таланов",r:"304"}],"22Д-26":[{l:1,s:"Дискр.матем.",t:"Коткова",r:"307"},{l:2,s:"МДК 01.01",t:"Ромашев",r:"406"},{l:3,s:"Комп.сети",t:"Жуков",r:"410"}]}};
+Object.keys(demo3).forEach(day=>{Object.keys(demo3[day]).forEach(group=>{schC[3][day][group]=demo3[day][group];});});
+
+const schZ=JSON.parse(JSON.stringify(schC));
+function gs(){return currentWeek==="chislitel"?schC:schZ;}
+
+// ======== ИНИЦИАЛИЗАЦИЯ ========
+function init(){
+    const gf=document.getElementById("groupFilter"),rg=document.getElementById("repGroup");
+    allG.forEach(g=>{gf.innerHTML+=`<option value="${g}">${g}</option>`;rg.innerHTML+=`<option value="${g}">${g}</option>`;});
+    renderSchedule();renderTeachers();renderRooms();renderReplacements();renderPrintGroups();updateUIForGuest();
+}
+
+function showTab(tab){
+    document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+    document.getElementById(tab).classList.add("active");
+    event.target.classList.add("active");
+}
+
+function setWeek(week){
+    currentWeek=week;
+    document.getElementById("btnChis").classList.toggle("active",week==="chislitel");
+    document.getElementById("btnZnam").classList.toggle("active",week==="znamenatel");
+    const ind=document.getElementById("weekIndicator");
+    ind.className="week-indicator "+week;
+    ind.textContent=week==="chislitel"?"📗 Неделя: Числитель":"📙 Неделя: Знаменатель";
+    renderSchedule();
+}
+
+// ======== АВТОРИЗАЦИЯ ========
+function showLoginModal(){document.getElementById("loginModal").classList.add("active");}
+function closeLoginModal(){document.getElementById("loginModal").classList.remove("active");document.getElementById("loginPassword").value="";document.getElementById("loginError").style.display="none";}
+function checkPassword(){
+    if(document.getElementById("loginPassword").value===ADMIN_PASSWORD){isAdmin=true;closeLoginModal();updateUIForAdmin();showToast("✅ Вход выполнен!");}
+    else{document.getElementById("loginError").style.display="block";document.getElementById("loginPassword").value="";}
+}
+function logout(){isAdmin=false;updateUIForGuest();showToast("🔒 Выход выполнен.");}
+
+function updateUIForAdmin(){
+    document.getElementById("loginBtn").style.display="none";
+    document.getElementById("logoutBtn").style.display="inline-flex";
+    document.getElementById("adminBadge").style.display="inline-flex";
+    document.querySelectorAll(".admin-only").forEach(el=>el.style.display="inline-flex");
+    document.querySelectorAll("#replacements .btn-primary,#replacements .btn-danger").forEach(el=>el.style.display="inline-flex");
+    document.querySelectorAll("#replacements input,#replacements select").forEach(el=>el.disabled=false);
+    renderSchedule();renderTeachers();
+}
+function updateUIForGuest(){
+    document.getElementById("loginBtn").style.display="inline-flex";
+    document.getElementById("logoutBtn").style.display="none";
+    document.getElementById("adminBadge").style.display="none";
+    document.querySelectorAll(".admin-only").forEach(el=>el.style.display="none");
+    document.querySelectorAll("#replacements .btn-primary,#replacements .btn-danger").forEach(el=>el.style.display="none");
+    document.querySelectorAll("#replacements input,#replacements select").forEach(el=>el.disabled=true);
+    renderSchedule();renderTeachers();
+}
+
+// ======== РЕНДЕР РАСПИСАНИЯ ========
+function renderSchedule(){
+    const container=document.getElementById("scheduleContainer");
+    const dayFilter=document.getElementById("dayFilter").value;
+    const courseFilter=document.getElementById("courseFilter").value;
+    const groupFilter=document.getElementById("groupFilter").value;
+    const shiftFilter=document.getElementById("shiftFilter").value;
+    const search=document.getElementById("searchInput").value.toLowerCase();
+    const schedule=gs();
+    let html="";
+    let coursesToShow=[1,2,3,4,5];
+    if(courseFilter!=="all")coursesToShow=[parseInt(courseFilter)];
+    coursesToShow.forEach(course=>{
+        const groups=getGroupsByCourse(course);
+        const filteredGroups=groups.filter(g=>{if(shiftFilter==="all")return true;return getShiftByGroup(g)===parseInt(shiftFilter);});
+        if(filteredGroups.length===0)return;
+        const sched=schedule[course];
+        html+=`<div class="course-header">${course} курс</div>`;
+        days.forEach(day=>{
+            if(dayFilter!=="all"&&dayFilter!==day)return;
+            html+=`<div class="day-header">${dn[day]}</div>`;
+            html+=`<div class="schedule-wrapper"><table class="schedule-table"><thead><tr><th>№</th>`;
+            filteredGroups.forEach(g=>{if(groupFilter==="all"||groupFilter===g)html+=`<th>${g}</th>`;});
+            html+=`</tr></thead><tbody>`;
+            const maxLessons=course<=2?(day==="saturday"?6:4):(day==="saturday"?5:4);
+            for(let lesson=1;lesson<=maxLessons;lesson++){
+                let rowHasData=false;
+                let rowHtml=`<tr><td class="lesson-num">${lesson}</td>`;
+                filteredGroups.forEach(g=>{
+                    if(groupFilter!=="all"&&groupFilter!==g)return;
+                    const dayData=sched[day]&&sched[day][g]?sched[day][g]:[];
+                    const lessonData=dayData.find(d=>d.l===lesson);
+                    if(lessonData&&lessonData.s){
+                        const text=(lessonData.s+lessonData.t+lessonData.r).toLowerCase();
+                        if(search&&!text.includes(search))rowHtml+=makeCell("","","",course,day,g,lesson);
+                        else{rowHtml+=makeCell(lessonData.s,lessonData.t,lessonData.r,course,day,g,lesson);rowHasData=true;}
+                    }else{
+                        rowHtml+=makeCell("","","",course,day,g,lesson);
+                        if(!search)rowHasData=true;
+                    }
+                });
+                rowHtml+=`</tr>`;
+                if(rowHasData||!search)html+=rowHtml;
+            }
+            html+=`</tbody></table></div>`;
+            if(isAdmin){
+                html+=`<div class="add-lesson-row no-print" onclick="addLessonRow('${course}','${day}')"><span>➕ Добавить строку</span></div>`;
+            }
+        });
+    });
+    container.innerHTML=html||"<p style='text-align:center;color:#999;padding:40px'>Нет данных</p>";
+}
+
+function makeCell(subject,teacher,room,course,day,group,lesson){
+    const hasData=subject&&subject.trim()!=="";
+    const onclick=isAdmin?`onclick="editScheduleCell('${course}','${day}','${group}',${lesson})"`:"";
+    if(!hasData){
+        if(isAdmin){
+            return `<td class="empty-cell" style="cursor:pointer;border:2px dashed #ddd;" ${onclick}><span style="color:#ccc;font-size:1.3em">—</span><div style="font-size:0.7em;color:#667eea;margin-top:3px">+ добавить</div></td>`;
+        }
+        return `<td class="empty-cell"><span style="color:#ccc">—</span></td>`;
+    }
+    const cls=isAdmin?"editable":"";
+    return `<td class="${cls}" style="${isAdmin?'cursor:pointer;':''}" ${onclick}><div class="subject">${subject}</div><div class="teacher">${teacher||''}</div><div class="room">${room||''}</div></td>`;
+}
+
+function filterSchedule(){renderSchedule();}
+
+// ======== ДОБАВЛЕНИЕ НОВОЙ СТРОКИ ========
+function addLessonRow(course,day){
+    if(!isAdmin){showToast("🔒 Войдите для редактирования");showLoginModal();return;}
+    const schedule=gs();
+    const groups=getGroupsByCourse(course);
+    let maxLesson=0;
+    groups.forEach(g=>{
+        const dayData=schedule[course][day][g]||[];
+        dayData.forEach(d=>{if(d.l>maxLesson)maxLesson=d.l;});
+    });
+    const newLesson=maxLesson+1;
+    currentEdit={course,day,group:null,lesson:newLesson,data:null,week:currentWeek,isNew:true};
+    document.getElementById("editSubject").value="";
+    document.getElementById("editRoom").value="";
+    document.getElementById("teacherEditor").innerHTML='';
+    addTeacherRow();
+    const weekText=currentWeek==="chislitel"?"Числитель":"Знаменатель";
+    document.getElementById("editInfo").textContent=`${dn[day]} | ${course} курс | Новая строка ${newLesson} | ${weekText}`;
+    document.getElementById("editModal").classList.add("active");
+}
+
+// ======== РЕДАКТИРОВАНИЕ ========
+function editScheduleCell(course,day,group,lesson){
+    if(!isAdmin){showToast("🔒 Войдите для редактирования");showLoginModal();return;}
+    const schedule=gs();
+    const dayData=schedule[course][day][group]||[];
+    const data=dayData.find(d=>d.l===lesson);
+    currentEdit={course,day,group,lesson,data:data||null,week:currentWeek,isNew:false};
+    document.getElementById("editSubject").value=data?data.s:"";
+    document.getElementById("editRoom").value=data?data.r:"";
+    const editor=document.getElementById("teacherEditor");
+    editor.innerHTML='';
+    if(data&&data.t){
+        const teachersList=data.t.split(',').map(t=>t.trim()).filter(t=>t);
+        teachersList.forEach(t=>addTeacherRow(t));
+    }else{
+        addTeacherRow();
+    }
+    const weekText=currentWeek==="chislitel"?"Числитель":"Знаменатель";
+    document.getElementById("editInfo").textContent=`${dn[day]} | ${group} | ${lesson} пара | ${weekText}`;
+    document.getElementById("editModal").classList.add("active");
+}
+
+function closeEditModal(){document.getElementById("editModal").classList.remove("active");currentEdit=null;}
+
+function addTeacherRow(teacherName=""){
+    const editor=document.getElementById("teacherEditor");
+    const row=document.createElement("div");
+    row.className="teacher-row";
+    row.innerHTML=`<input type="text" class="teacher-input" placeholder="ФИО учителя" value="${teacherName}" style="flex:1;margin-bottom:0"><button class="btn btn-danger" onclick="this.parentElement.remove()" style="padding:8px 12px;font-size:0.8em">✕</button>`;
+    editor.appendChild(row);
+}
+
+function getTeachersFromEditor(){
+    const inputs=document.querySelectorAll(".teacher-input");
+    const result=[];
+    inputs.forEach(input=>{if(input.value.trim())result.push(input.value.trim());});
+    return result.join(", ");
+}
+
+// ======== СОХРАНЕНИЕ ЗАНЯТИЯ ========
+function saveEdit(){
+    if(!currentEdit)return;
+    const s=document.getElementById("editSubject").value.trim();
+    const r=document.getElementById("editRoom").value.trim();
+    const t=getTeachersFromEditor();
+    const schedule=currentEdit.week==="chislitel"?schC:schZ;
+    if(currentEdit.isNew){
+        if(!s){closeEditModal();return;}
+        const groups=getGroupsByCourse(currentEdit.course);
+        groups.forEach(g=>{
+            if(!schedule[currentEdit.course][currentEdit.day][g])schedule[currentEdit.course][currentEdit.day][g]=[];
+            schedule[currentEdit.course][currentEdit.day][g].push({l:currentEdit.lesson,s,t,r});
+        });
+    }else{
+        const dayData=schedule[currentEdit.course][currentEdit.day][currentEdit.group];
+        const idx=dayData.findIndex(d=>d.l===currentEdit.lesson);
+        if(idx>=0){
+            if(s){dayData[idx].s=s;dayData[idx].t=t;dayData[idx].r=r;}
+            else dayData.splice(idx,1);
+        }else if(s)dayData.push({l:currentEdit.lesson,s,t,r});
+    }
+    closeEditModal();renderSchedule();showToast(s?"✅ Сохранено!":"🗑️ Пара удалена!");
+}
+
+function deleteLesson(){
+    if(!currentEdit)return;
+    const schedule=currentEdit.week==="chislitel"?schC:schZ;
+    if(currentEdit.isNew){closeEditModal();renderSchedule();return;}
+    const dayData=schedule[currentEdit.course][currentEdit.day][currentEdit.group];
+    const idx=dayData.findIndex(d=>d.l===currentEdit.lesson);
+    if(idx>=0)dayData.splice(idx,1);
+    closeEditModal();renderSchedule();showToast("🗑️ Пара удалена!");
+}
+
+// ======== ЗАМЕНЫ ========
+function addReplacement(){
+    if(!isAdmin){showToast("🔒 Войдите для редактирования");showLoginModal();return;}
+    const day=document.getElementById("repDay").value;
+    const group=document.getElementById("repGroup").value;
+    const fromLesson=document.getElementById("repFromLesson").value;
+    const toLesson=document.getElementById("repToLesson").value;
+    const week=document.getElementById("repWeek").value;
+    const subject=document.getElementById("repSubject").value;
+    const teacher=document.getElementById("repTeacher").value;
+    const room=document.getElementById("repRoom").value;
+    const note=document.getElementById("repNote").value;
+    if(!day||!group||!fromLesson||!toLesson||!subject){showToast("Заполните обязательные поля!");return;}
+    replacements.push({id:Date.now(),day,group,fromLesson:parseInt(fromLesson),toLesson:parseInt(toLesson),week,subject,teacher,room,note,date:new Date().toLocaleDateString("ru-RU")});
+    document.getElementById("repDay").value="";document.getElementById("repGroup").value="";
+    document.getElementById("repFromLesson").value="";document.getElementById("repToLesson").value="";
+    document.getElementById("repWeek").value="";
+    document.getElementById("repSubject").value="";document.getElementById("repTeacher").value="";
+    document.getElementById("repRoom").value="";document.getElementById("repNote").value="";
+    renderReplacements();showToast("Замена добавлена!");
+}
+
+function renderReplacements(){
+    const container=document.getElementById("replacementList");
+    if(replacements.length===0){container.innerHTML="<p style='text-align:center;color:#999;padding:40px'>Нет замен</p>";return;}
+    let html="";
+    replacements.forEach(rep=>{
+        const wl=rep.week?(rep.week==="chislitel"?"📗 Числ":rep.week==="znamenatel"?"📙 Знам":"📗📙 Обе"):"";
+        html+=`<div class="replacement-item"><div class="info"><strong>${dn[rep.day]}</strong> ${wl} | ${rep.group} | <strong>${rep.fromLesson} → ${rep.toLesson} пара</strong> | <strong>${rep.subject}</strong> | ${rep.teacher} | ${rep.room}${rep.note?` | <em>${rep.note}</em>`:""}<br><small style="color:#999">${rep.date}</small></div>${isAdmin?`<button class="btn btn-danger" onclick="deleteReplacement(${rep.id})">🗑️</button>`:""}</div>`;
+    });
+    container.innerHTML=html;
+}
+
+function deleteReplacement(id){
+    if(!isAdmin)return;
+    replacements=replacements.filter(r=>r.id!==id);
+    renderReplacements();
+    showToast("Удалено!");
+}
+
+function exportReplacementsDOCX(){
+    if(replacements.length===0){showToast("Нет замен для экспорта!");return;}
+    let html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>Замены</title><style>body{font-family:'Times New Roman'}h1{text-align:center}table{width:100%;border-collapse:collapse}th{background:#4472C4;color:white;padding:10px;border:1px solid #333}td{padding:10px;border:1px solid #333}</style></head><body><h1>Замены на занятия</h1><p style="text-align:center">${new Date().toLocaleDateString("ru-RU")}</p><table><tr><th>№</th><th>День</th><th>Неделя</th><th>Группа</th><th>С какой пары</th><th>На какую пару</th><th>Предмет</th><th>Учитель</th><th>Кабинет</th><th>Примечание</th></tr>`;
+    replacements.forEach((rep,i)=>{
+        const wt=rep.week==="chislitel"?"Числитель":rep.week==="znamenatel"?"Знаменатель":"Обе недели";
+        html+=`<tr><td>${i+1}</td><td>${dn[rep.day]}</td><td>${wt}</td><td>${rep.group}</td><td>${rep.fromLesson}</td><td>${rep.toLesson}</td><td>${rep.subject}</td><td>${rep.teacher}</td><td>${rep.room}</td><td>${rep.note||"-"}</td></tr>`;
+    });
+    html+=`</table></body></html>`;
+    const blob=new Blob([html],{type:"application/msword"});
+    const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download=`Замены_${new Date().toLocaleDateString("ru-RU")}.doc`;
+    link.click();
+    showToast("Сохранено в DOC!");
+}
+
+// ======== УЧИТЕЛЯ С РЕДАКТИРОВАНИЕМ ========
+function renderTeachers(){
+    document.getElementById("teacherCount").textContent=teachers.length;
+    document.getElementById("subjectCount").textContent=subjects.length;
+    const container=document.getElementById("teachersList");
+    const bySubject={};
+    subjects.forEach(s=>bySubject[s]=[]);
+    teachers.forEach((t,i)=>{const s=subjects[i%subjects.length];if(!bySubject[s])bySubject[s]=[];bySubject[s].push(t);});
+    let html="";
+    Object.keys(bySubject).forEach(s=>{
+        const list=bySubject[s];
+        if(list.length===0)return;
+        html+=`<div class="list-card"><h3>📖 ${s}</h3><ul>${list.map(t=>{
+            const teacherIndex=teachers.indexOf(t);
+            return `<li>${t}${isAdmin?`<button class="btn btn-warning" onclick="editTeacher(${teacherIndex})" style="padding:4px 8px;font-size:0.75em">✏️</button>`:''}</li>`;
+        }).join("")}</ul></div>`;
+    });
+    container.innerHTML=html;
+}
+
+function editTeacher(index){
+    if(!isAdmin)return;
+    currentTeacherEdit=index;
+    const teacher=teachers[index];
+    document.getElementById("editTeacherName").value=teacher;
+    document.getElementById("teacherEditInfo").textContent=`Редактирование: ${teacher}`;
+    document.getElementById("teacherEditModal").classList.add("active");
+}
+
+function closeTeacherEditModal(){
+    document.getElementById("teacherEditModal").classList.remove("active");
+    currentTeacherEdit=null;
+}
+
+function saveTeacherEdit(){
+    if(currentTeacherEdit===null)return;
+    const name=document.getElementById("editTeacherName").value.trim();
+    if(!name){showToast("Введите ФИО!");return;}
+    teachers[currentTeacherEdit]=name;
+    closeTeacherEditModal();
+    renderTeachers();
+    showToast("✅ Учитель обновлён!");
+}
+
+function deleteTeacher(){
+    if(currentTeacherEdit===null)return;
+    teachers.splice(currentTeacherEdit,1);
+    closeTeacherEditModal();
+    renderTeachers();
+    showToast("🗑️ Учитель удалён!");
+}
+
+function addNewTeacher(){
+    if(!isAdmin)return;
+    teachers.push("Новый учитель");
+    renderTeachers();
+    showToast("➕ Учитель добавлен! Отредактируйте его.");
+}
+
+function saveTeachers(){
+    if(!isAdmin)return;
+    const data=JSON.stringify({teachers},null,2);
+    const blob=new Blob([data],{type:"application/json"});
+    const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download=`teachers_${new Date().toLocaleDateString("ru-RU")}.json`;
+    link.click();
+    showToast("Учителя сохранены!");
+}
+
+// ======== КАБИНЕТЫ ========
+function renderRooms(){
+    document.getElementById("roomCount").textContent=rooms.length;
+    const container=document.getElementById("roomsList");
+    const types={"100-108":rooms.filter(r=>r.startsWith("1")&&!isNaN(r)),"200-208":rooms.filter(r=>r.startsWith("2")&&!isNaN(r)),"300-310":rooms.filter(r=>r.startsWith("3")&&!isNaN(r)),"400-410":rooms.filter(r=>r.startsWith("4")&&!isNaN(r)),"Специальные":rooms.filter(r=>isNaN(r)||r==="01")};
+    let html="";
+    Object.keys(types).forEach(t=>{const list=types[t];if(list.length===0)return;html+=`<div class="list-card"><h3>🏫 ${t}</h3><ul>${list.map(r=>`<li>Кабинет ${r}</li>`).join("")}</ul></div>`;});
+    container.innerHTML=html;
+}
+
+// ======== ПЕЧАТЬ ========
+function renderPrintGroups(){
+    const container=document.getElementById("printGroupSelector");
+    allG.forEach(g=>{
+        const chip=document.createElement("div");
+        chip.className="group-chip";
+        chip.textContent=g;
+        chip.onclick=()=>{chip.classList.toggle("active");if(selectedPrintGroups.includes(g))selectedPrintGroups=selectedPrintGroups.filter(x=>x!==g);else selectedPrintGroups.push(g);};
+        container.appendChild(chip);
+    });
+}
+
+function generatePrintView(){
+    const container=document.getElementById("printPreview");
+    if(selectedPrintGroups.length===0){container.innerHTML="<p style='text-align:center;color:#999'>Выберите группы</p>";return;}
+    const printWeek=document.getElementById("printWeek").value;
+    const schedule=printWeek==="chislitel"?schC:schZ;
+    const weekName=printWeek==="chislitel"?"📗 Числитель":"📙 Знаменатель";
+    let html=`<div class="print-section">`;
+    selectedPrintGroups.forEach(g=>{
+        const course=getCourseByGroup(g);
+        html+=`<div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #667eea"><h2>Расписание группы ${g}</h2><p>${course} курс | ${weekName} | ${new Date().toLocaleDateString("ru-RU")}</p></div>`;
+        html+=`<table class="print-table"><thead><tr><th>День</th><th>Пара</th><th>Предмет</th><th>Учитель</th><th>Кабинет</th></tr></thead><tbody>`;
+        days.forEach(day=>{
+            const dayData=schedule[course][day]&&schedule[course][day][g]?schedule[course][day][g]:[];
+            if(dayData.length===0)html+=`<tr><td>${dn[day]}</td><td colspan="4" style="text-align:center;color:#999">Нет занятий</td></tr>`;
+            else dayData.forEach((d,i)=>{html+=`<tr>${i===0?`<td rowspan="${dayData.length}">${dn[day]}</td>`:""}<td>${d.l}</td><td>${d.s}</td><td>${d.t}</td><td>${d.r}</td></tr>`;});
+        });
+        html+=`</tbody></table><div style="page-break-after:always;margin:30px 0"></div>`;
+    });
+    html+=`</div>`;
+    container.innerHTML=html;
+}
+
+function updatePrintPreview(){generatePrintView();}
+
+function saveSchedule(){
+    if(!isAdmin){showToast("🔒 Войдите для сохранения");showLoginModal();return;}
+    const data=JSON.stringify({chislitel:schC,znamenatel:schZ,replacements},null,2);
+    const blob=new Blob([data],{type:"application/json"});
+    const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download=`schedule_${currentWeek}_${new Date().toLocaleDateString("ru-RU")}.json`;
+    link.click();
+    showToast("Сохранено!");
+}
+
+function showToast(msg){
+    const t=document.getElementById("toast");
+    t.textContent=msg;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"),3000);
+}
+
+document.getElementById("editModal").addEventListener("click",function(e){if(e.target===this)closeEditModal();});
+document.getElementById("loginModal").addEventListener("click",function(e){if(e.target===this)closeLoginModal();});
+document.getElementById("teacherEditModal").addEventListener("click",function(e){if(e.target===this)closeTeacherEditModal();});
+
+window.onload=init;
+</script>
+</body>
+</html>
